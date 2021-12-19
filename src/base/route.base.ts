@@ -4,6 +4,7 @@ import { ControllerBase } from './controller.base';
 import { HttpStatus } from '../types/response.type';
 
 import { ResponseObject } from '../common/response/response.object';
+import session from 'express-session';
 
 export abstract class RouteBase {
 
@@ -11,11 +12,18 @@ export abstract class RouteBase {
   protected controller!: ControllerBase;
 
   constructor() {
+    // this.router.use(session({
+    //   secret: 'mySecret',
+    //   name:'user',
+    //   saveUninitialized: false,
+    //   resave: true
+    // }))
     this.initial();
   }
 
   protected initial(): void {
     this.registerRoute();
+ 
   }
 
   protected abstract registerRoute(): void;

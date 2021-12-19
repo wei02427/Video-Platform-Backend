@@ -20,8 +20,8 @@ import mysql from 'mysql';
 
 import knex, { Knex } from 'knex';
 
-class Database {
-    private static instance: any;
+export default class Database {
+    private static instance: Knex;
 
     public static getInstance() {
         if (!this.instance)
@@ -37,20 +37,19 @@ class Database {
         return this.instance;
     }
 }
-let connection = mysql.createConnection({
-    host: '34.67.92.218',
-    user: 'root',
-    database: 'Platform',
-    password: 'rveyE8e4Ajnu4c6h'
-});
+// let connection = mysql.createConnection({
+//     host: '34.67.92.218',
+//     user: 'root',
+//     database: 'Platform',
+//     password: 'rveyE8e4Ajnu4c6h'
+// });
 
-connection.connect(function (err) {
-    if (err) {
-        console.error('Error connecting: ' + err.stack);
-        return;
-    }
-    console.log('Connected as thread id: ' + connection.threadId);
-});
+// connection.connect(function (err) {
+//     if (err) {
+//         console.error('Error connecting: ' + err.stack);
+//         return;
+//     }
+//     console.log('Connected as thread id: ' + connection.threadId);
+// });
 
 
-export default connection;
