@@ -44,18 +44,22 @@ export class App {
 
     this.app.use(session({
       secret: 'mySecret',
-      name:'user',
+      name: 'user',
       saveUninitialized: false,
-      resave: true
+      resave: true,
+      cookie: {
+        maxAge: 1000 * 60 * 10, // 設定 session 的有效時間，單位毫秒
+      }
     }))
 
   }
   private registerRoute(): void {
 
-    // this.app.get('/', (req : Request, res) => {
-    //   console.log(req.session)
-    //   console.log(req.sessionID) 
-    // })
+    this.app.use('/', (req: Request, res,next) => {
+      console.log(req.sessionID)
+      console.log(req.session.user)
+      next();
+    })
 
     this.app.use('/', this.route.router);
   }

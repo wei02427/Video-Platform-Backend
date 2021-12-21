@@ -4,13 +4,21 @@ import Database from '../database/database';
 
 export abstract class ControllerBase {
   protected db = Database.getInstance();
-  
+
+
+  constructor() {
+    this.init();
+  }
+
+  protected  init(){};
+
+
   public formatResponse(data: any, status = HttpStatus.INTERNAL_ERROR): ResponseObject {
     const options: any = { status };
 
     status >= 400
-    ? options.message = data
-    : options.data = data;
+      ? options.message = data
+      : options.data = data;
 
     const responseObject = new ResponseObject(options);
 

@@ -13,7 +13,7 @@ export class AuthRoute extends RouteBase {
     super.initial();
 }
   protected registerRoute(): void {
-    this.router.use('/auth', this.authAccountRoute.router);
+    this.router.use('/local', this.authAccountRoute.router);
   }
 
 }

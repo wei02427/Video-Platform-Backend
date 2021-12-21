@@ -3,29 +3,31 @@ import crypto from 'crypto';
 import { HttpStatus } from "../../../types/response.type";
 
 export default class AccountService {
-    public static async register(name: string, email: string, password: string) {
 
-        const isExist = (await AccountModel.getAccount(email)).length;
-        if (isExist) {
+    private accountModel = new AccountModel();
+
+    public async register(name: string, email: string, password: string) {
+
+        const isExist = (await this.accountModel.getAccount(email));
+
+        if (isExist.length > 0) {
             const error = new Error('電子信箱已被使用');
             (error as any).status = HttpStatus.CONFLICT;
             throw error;
         }
-
-        const salt = crypto.randomBytes(16).toString('hex')
+        const salt = crypto.randomBytes(16).toString('hex');
         const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha256').toString();
 
-        console.log('gggggggg')
-        AccountModel.addAccount({ name, email, password: hash, salt });
+        this.accountModel.addAccount({ name, email, password: hash, salt });
 
 
         return name;
     }
 
 
-    public static async login(email: string, password: string) {
+    public async login(email: string, password: string) {
 
-        const { password: hashPw, salt, name } = (await AccountModel.getAccount(email))[0];
+        const { password: hashPw, salt, name } = (await this.accountModel.getAccount(email))[0];
 
         const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha256').toString();
 

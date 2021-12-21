@@ -9,29 +9,33 @@ import AccountService from "./account.service";
 
 export class AccountController extends ControllerBase {
 
+    private accountService!: AccountService;
 
+    protected init(): void {
+        this.accountService = new AccountService();
+
+    }
     public async login(req: Request, res: Response, next: NextFunction) {
 
-
         const { email, password } = req.body;
-        const name = await AccountService.login(email, password);
+
+        const name = await this.accountService.login(email, password);
 
         req.session.user = name;
 
-        return this.formatResponse('user', HttpStatus.OK);
+        return this.formatResponse({ name }, HttpStatus.OK);
 
     }
 
     public async register(req: Request, res: Response, next: NextFunction) {
 
-        console.log('ssssssss')
 
         const { name, email, password } = req.body;
-        await AccountService.register(email, password, password);
+        await this.accountService.register(name, email, password);
 
         req.session.user = name;
 
-        return this.formatResponse('user', HttpStatus.CREATED);
+        return this.formatResponse({ name }, HttpStatus.CREATED);
 
     }
 

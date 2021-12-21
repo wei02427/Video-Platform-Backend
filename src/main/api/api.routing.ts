@@ -1,19 +1,19 @@
 import { RouteBase } from '../../base/route.base';
-import { TodoRoute } from './todo/todo.routing';
+import { VideoRoute } from './video/video.routing';
 
 export class ApiRoute extends RouteBase {
 
-  private todoRoute !:TodoRoute;
+  private videoRoute !:VideoRoute;
 
   constructor() {
     super();
   }
   protected initial(): void {
-    this.todoRoute = new TodoRoute();
+    this.videoRoute = new VideoRoute();
     super.initial();
 }
   protected registerRoute(): void {
-    this.router.use('/todo', this.todoRoute.router);
+    this.router.use('/video', this.videoRoute.router);
   }
 
 }

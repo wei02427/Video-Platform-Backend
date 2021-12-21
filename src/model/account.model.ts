@@ -16,13 +16,15 @@ declare module 'express-session' {
   
 
 export default class AccountModel {
-    private static Accounts = (Database.getInstance())<Account>('Account');
+    private  Accounts = (Database.getInstance())<Account>('Account');
 
-    public static addAccount(account: Account) {
-        this.Accounts.insert(account);
+
+    
+    public  async addAccount(account: Account) {
+        return await  this.Accounts.clone().insert(account);
     }
 
-    public static async getAccount(email: string) {
-        return await this.Accounts.select('*').where('Email', '=', email);
+    public  async getAccount(email: string) {
+        return await this.Accounts.clone().where('email', '=', email);
     }
 };

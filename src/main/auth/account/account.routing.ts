@@ -14,21 +14,19 @@ export class AccountRoute extends RouteBase {
   }
 
   protected registerRoute(): void {
+    
     this.router.post('/login',
       express.json(),
       this.responseHandler(this.controller.login)
     );
+
     this.router.post('/register',
       express.json(),
       this.responseHandler(this.controller.register)
     );
-    this.router.get('/get',
-      (req: Request, res: Response, next: NextFunction) => {
-        console.log('ggggggggggg')
 
-        return 'hhhhh';
-      }
 
-    );
+
+  
   }
 }
