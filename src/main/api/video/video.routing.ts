@@ -17,6 +17,8 @@ export class VideoRoute extends RouteBase {
 
   protected registerRoute(): void {
     this.router.post('/upload', [express.json(), fileUpload({ createParentPath: true })], this.responseHandler(this.controller.upload));
+    this.router.get('/watch/:hash', express.json(), this.responseHandler(this.controller.download));
+
   }
 
 }

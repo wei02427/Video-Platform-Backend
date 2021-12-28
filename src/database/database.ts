@@ -28,10 +28,10 @@ export default class Database {
             this.instance = knex({
                 client: 'mysql',
                 connection: {
-                    host: '34.67.92.218',
-                    user: 'root',
-                    database: 'Platform',
-                    password: 'rveyE8e4Ajnu4c6h'
+                    host: 'us-cdbr-east-05.cleardb.net',
+                    user: 'b61dd2d8a12973',
+                    database: 'heroku_982cc305612d166',
+                    password: 'b9b3946a'
                 }
             })
         return this.instance;

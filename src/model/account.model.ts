@@ -16,7 +16,7 @@ declare module 'express-session' {
   
 
 export default class AccountModel {
-    private  Accounts = (Database.getInstance())<Account>('Account');
+    private  Accounts = (Database.getInstance())<Account>('Accounts');
 
 
     

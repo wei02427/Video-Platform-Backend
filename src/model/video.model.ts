@@ -2,12 +2,17 @@ import Bucket from "../database/bucket";
 import Database from "../database/database";
 import crypto from 'crypto';
 import fs from 'fs';
-import stream from "stream";
+import stream, { Readable } from "stream";
+
+
+import encodeMultiBitrate, { Bitrate } from "../utils/ffmpeg";
+
 
 export interface Video {
     ID?: number;
     title: string;
     hash: string;
+
 }
 
 
@@ -17,26 +22,33 @@ export default class VideoModel {
     private bucket = Bucket.getInstance();
 
 
-    public async addVideo(title: string, filename: string, data: Buffer) {
+    public async addVideoInfo(title: string, folderName: string) {
 
         const hashFileName = crypto.createHash('md5').update(title).digest('hex');
-        const file = this.bucket.file(hashFileName + '.' + filename.split('.').slice(-1)[0]);
 
-
-        const readStream = new stream.PassThrough();
-        readStream.end(data);
-
-
-
-        await readStream.pipe(file.createWriteStream()).on('finish', () => {
-
-            console.log(' The file upload is complete')
-        });
 
         return await this.Videos.clone().insert({ title, hash: hashFileName });
     }
 
-    public async getVideos(id: number) {
-        return await this.Videos.clone().where('ID', '=', id);
+    public uploadFile(filePath: string, fileName: string, destFileName: string) {
+
+        this.bucket.upload(filePath + '/' + fileName, {
+            destination: destFileName + '/' + fileName,
+        });
+
+    }
+
+
+
+
+
+    public async getVideo(hash: string) {
+        const info = (await this.Videos.clone().select('*').where('hash', '=', hash));
+        console.log(info)
+        const video = await this.bucket.file(hash + '.mp4');
+        const [metaData] = await video.getMetadata();
+
+
+        return { info: { ...info[0], size: metaData.size }, video };
     }
 };

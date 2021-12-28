@@ -2,3 +2,4 @@
 /assets
 /src/database/*.json
 
+src/utils/ffmpeg.exe

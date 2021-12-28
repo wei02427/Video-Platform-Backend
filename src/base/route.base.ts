@@ -23,15 +23,22 @@ export abstract class RouteBase {
 
   protected initial(): void {
     this.registerRoute();
- 
+
   }
 
   protected abstract registerRoute(): void;
 
-  protected responseHandler(method: (req: Request, res: Response, next: NextFunction) => Promise<ResponseObject>, controller = this.controller) {
+  protected responseHandler(method: (req: Request, res: Response, next: NextFunction) => Promise<ResponseObject> | Promise<void>, controller = this.controller) {
     return (req: Request, res: Response, next: NextFunction) => {
+
       method.call(this.controller, req, res, next)
-        .then(obj => res.status(obj.status).json(obj))
+        .then(obj => {
+          if (obj) {
+            return res.status(obj.status).json(obj);
+          }
+          // if (obj.status !== HttpStatus.PARTIAL_CONTENT)
+          //   return res.status(obj.status).json(obj);
+        })
         .catch((err: Error) => next(controller.formatResponse(err.message, (err as any).status || HttpStatus.INTERNAL_ERROR)));
     };
   }
