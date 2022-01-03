@@ -4,15 +4,21 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { AppRoute } from './app.routing';
 import session from 'express-session';
-
+import passport from 'passport';
+import AccountService from './main/auth/account/account.service';
+import AccountModel, { Account } from './model/account.model';
 export class App {
 
   private app = express();
   private route = new AppRoute();
+  private accountService = new AccountService();
+  private accountModel = new AccountModel();
   constructor() {
     this.setHelmet();
     this.setCors();
+
     this.setSession();
+    this.setPassport();
     this.registerRoute();
   }
 
@@ -53,11 +59,31 @@ export class App {
     }))
 
   }
+
+  private setPassport() {
+
+
+    passport.use(this.accountService.Strategy);
+    passport.serializeUser<number>(function (user, done) {
+      done(null, user.id);
+    });
+    passport.deserializeUser<number>(async  (userID, done) => {
+
+
+      const user = await this.accountModel.getAccountByID(userID);
+
+      done(null, user);
+    });
+
+    this.app.use(passport.initialize());
+    this.app.use(passport.session());
+
+
+  }
   private registerRoute(): void {
 
-    this.app.use('/', (req: Request, res,next) => {
-      console.log(req.sessionID)
-      console.log(req.session.user)
+    this.app.use('/', (req: Request, res, next) => {
+      console.log(req.user?.email,'session user')
       next();
     })
 

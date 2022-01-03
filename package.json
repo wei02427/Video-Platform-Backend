@@ -17,6 +17,8 @@
     "@types/into-stream": "^3.1.1",
     "@types/mysql": "^2.15.19",
     "@types/node": "^16.11.13",
+    "@types/passport": "^1.0.7",
+    "@types/passport-local": "^1.0.34",
     "@types/tmp": "^0.2.3",
     "ts-node-dev": "^1.1.8",
     "typescript": "^4.5.4"
@@ -34,6 +36,8 @@
     "knex": "^0.95.14",
     "mp4box": "^0.4.9",
     "mysql": "^2.18.1",
+    "passport": "^0.5.2",
+    "passport-local": "^1.0.0",
     "simple-hls": "0.0.1",
     "tmp": "^0.2.1",
     "transloadit": "^3.0.2"

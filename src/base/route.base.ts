@@ -12,12 +12,6 @@ export abstract class RouteBase {
   protected controller!: ControllerBase;
 
   constructor() {
-    // this.router.use(session({
-    //   secret: 'mySecret',
-    //   name:'user',
-    //   saveUninitialized: false,
-    //   resave: true
-    // }))
     this.initial();
   }
 
@@ -29,17 +23,18 @@ export abstract class RouteBase {
   protected abstract registerRoute(): void;
 
   protected responseHandler(method: (req: Request, res: Response, next: NextFunction) => Promise<ResponseObject> | Promise<void>, controller = this.controller) {
+
     return (req: Request, res: Response, next: NextFunction) => {
 
       method.call(this.controller, req, res, next)
         .then(obj => {
+      
           if (obj) {
-            return res.status(obj.status).json(obj);
+            res.status(obj.status).json(obj);
           }
-          // if (obj.status !== HttpStatus.PARTIAL_CONTENT)
-          //   return res.status(obj.status).json(obj);
         })
-        .catch((err: Error) => next(controller.formatResponse(err.message, (err as any).status || HttpStatus.INTERNAL_ERROR)));
+        .catch((err: Error) =>
+          next(controller.formatResponse(err.message, (err as any).status || HttpStatus.INTERNAL_ERROR)));
     };
   }
 

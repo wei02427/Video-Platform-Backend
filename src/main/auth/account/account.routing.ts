@@ -14,11 +14,17 @@ export class AccountRoute extends RouteBase {
   }
 
   protected registerRoute(): void {
-    
+
     this.router.post('/login',
       express.json(),
       this.responseHandler(this.controller.login)
     );
+
+
+    this.router.get('/logout',
+      this.controller.ensureAuthenticated,
+      this.responseHandler(this.controller.logout)
+    )
 
     this.router.post('/register',
       express.json(),
@@ -27,6 +33,8 @@ export class AccountRoute extends RouteBase {
 
 
 
-  
+
+
+
   }
 }

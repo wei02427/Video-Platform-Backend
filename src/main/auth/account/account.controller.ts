@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import passport from 'passport';
 
 import { ControllerBase } from "../../../base/controller.base";
 import { ResponseObject } from "../../../common/response/response.object";
@@ -15,15 +16,24 @@ export class AccountController extends ControllerBase {
         this.accountService = new AccountService();
 
     }
+
+
     public async login(req: Request, res: Response, next: NextFunction) {
 
-        const { email, password } = req.body;
 
-        const name = await this.accountService.login(email, password);
 
-        req.session.user = name;
+        const user = await this.accountService.login(req, res, next);
 
-        return this.formatResponse({ name }, HttpStatus.OK);
+
+        return this.formatResponse({ name: user.name }, HttpStatus.OK);
+
+    }
+
+    public async logout(req: Request, res: Response, next: NextFunction) {
+
+        req.session.destroy(() => { });
+
+        return this.formatResponse('ok', HttpStatus.OK);
 
     }
 
