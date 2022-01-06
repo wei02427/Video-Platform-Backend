@@ -33,8 +33,5 @@ export class AccountRoute extends RouteBase {
 
 
 
-
-
-
   }
 }

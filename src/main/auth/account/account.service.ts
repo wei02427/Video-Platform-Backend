@@ -75,13 +75,13 @@ export default class AccountService {
         return new Promise<Account>((resolve, reject) => {
             passport.authenticate('local', (err: Error, user: Account) => {
                 if (err) {
-                    // console.log(err,'saaaaaa')
+
                     return reject(err);
                 }
 
                 req.logIn(user, function (err) {
                     if (err) {
-                        // console.log(err,'sssssss')
+
                         const error = new Error('Not found User');
                         (error as any).status = HttpStatus.NOT_FOUND;
                         throw error;
@@ -96,5 +96,12 @@ export default class AccountService {
 
     }
 
+    public async addSubscriber(subscriber: number, uid: number) {
+        this.accountModel.addSubscriberByID(subscriber, uid);
+    }
+
+    public async removeSubscriber(subscriber: number, uid: number) {
+        this.accountModel.removeSubscriberByID(subscriber, uid);
+    }
 
 }

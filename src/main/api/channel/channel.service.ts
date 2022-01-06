@@ -69,12 +69,9 @@ export class VideoService {
 
     }
 
-    public async getMPD(hash: string) {
-        return await this.videoModel.getMPDFile(hash);
-    }
 
-    public async getMP4(hash: string, filename: string) {
-        return await this.videoModel.getMP4File(hash, filename);
+    public async getVideo(hash: string, filename: string) {
+        return await this.videoModel.getVideo(hash, filename);
     }
 
 }

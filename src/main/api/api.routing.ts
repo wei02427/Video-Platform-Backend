@@ -1,5 +1,5 @@
 import { RouteBase } from '../../base/route.base';
-import { VideoRoute } from './video/video.routing';
+import { VideoRoute } from './channel/channel.routing';
 
 export class ApiRoute extends RouteBase {
 
@@ -13,7 +13,7 @@ export class ApiRoute extends RouteBase {
     super.initial();
 }
   protected registerRoute(): void {
-    this.router.use('/video', this.videoRoute.router);
+    this.router.use('/channel', this.videoRoute.router);
   }
 
 }

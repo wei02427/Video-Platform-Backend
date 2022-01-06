@@ -1,3 +1,4 @@
+import _ from "lodash";
 import Database from "../database/database";
 
 export interface Account {
@@ -6,6 +7,7 @@ export interface Account {
     email: string;
     password: string;
     salt: string;
+    subscribers?: string
 }
 
 declare module 'express-session' {
@@ -16,11 +18,11 @@ declare module 'express-session' {
 
 declare global {
     namespace Express {
-      interface User extends Account {
+        interface User extends Account {
 
-      }
+        }
     }
-  }
+}
 export default class AccountModel {
     private Accounts = (Database.getInstance())<Account>('Accounts');
 
@@ -38,5 +40,32 @@ export default class AccountModel {
     public async getAccountByID(id: number) {
         const result = await this.Accounts.clone().where('id', '=', id);
         return result.length ? result[0] : null;
+    }
+
+    public async addSubscriberByID(subscriber: number, id: number) {
+
+        const subscribers = await this.getSubscribesByID(id);
+        subscribers.push(subscriber.toString());
+
+        const result = await this.Accounts.clone().update('subscribers', subscribers.join(',')).where('id', '=', id);
+
+        return result;
+    }
+
+    public async removeSubscriberByID(subscriber: number, id: number) {
+
+        const subscribers = await this.getSubscribesByID(id);
+        _.pull(subscribers,subscriber.toString());
+
+        const result = await this.Accounts.clone().update('subscribers', subscribers.join(',')).where('id', '=', id);
+
+        return result;
+    }
+
+
+    public async getSubscribesByID(id: number) {
+        const result = await this.Accounts.clone().select('subscribers').where('id', '=', id);
+
+        return _.split(result[0].subscribers, ',');
     }
 };

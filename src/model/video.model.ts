@@ -37,23 +37,13 @@ export default class VideoModel {
 
 
 
+    public async getVideo(hash: string, filename: string) {
 
-    public async getMPDFile(hash: string) {
-        const info = (await this.Videos.clone().select('*').where('hash', '=', hash));
 
-        const mpd = await this.bucket.file(hash + '/' + 'playlist.mpd');
-        const [metaData] = await mpd.getMetadata();
+        const file = await this.bucket.file(hash + '/' + filename);
+        const [metaData] = await file.getMetadata();
 
-        return mpd;
-    }
-
-    public async getMP4File(hash: string,filename:string) {
-    
-
-        const mp4 = await this.bucket.file(hash + '/' + filename);
-        const [metaData] = await mp4.getMetadata();
-
-        return mp4;
+        return [file, metaData];
 
     }
 };

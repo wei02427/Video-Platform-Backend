@@ -15,6 +15,7 @@
     "@types/express-session": "^1.17.4",
     "@types/fluent-ffmpeg": "^2.1.20",
     "@types/into-stream": "^3.1.1",
+    "@types/lodash": "^4.14.178",
     "@types/mysql": "^2.15.19",
     "@types/node": "^16.11.13",
     "@types/passport": "^1.0.7",
@@ -34,11 +35,13 @@
     "helmet": "^4.6.0",
     "into-stream": "^7.0.0",
     "knex": "^0.95.14",
+    "lodash": "^4.17.21",
     "mp4box": "^0.4.9",
     "mysql": "^2.18.1",
     "passport": "^0.5.2",
     "passport-local": "^1.0.0",
     "simple-hls": "0.0.1",
+    "socket.io": "^4.4.0",
     "tmp": "^0.2.1",
     "transloadit": "^3.0.2"
   }

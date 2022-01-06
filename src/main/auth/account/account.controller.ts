@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import _ from 'lodash';
 import passport from 'passport';
 
 import { ControllerBase } from "../../../base/controller.base";
@@ -24,8 +25,7 @@ export class AccountController extends ControllerBase {
 
         const user = await this.accountService.login(req, res, next);
 
-
-        return this.formatResponse({ name: user.name }, HttpStatus.OK);
+        return this.formatResponse({ name: user.name, id: user.id }, HttpStatus.OK);
 
     }
 
@@ -48,5 +48,6 @@ export class AccountController extends ControllerBase {
         return this.formatResponse({ name }, HttpStatus.CREATED);
 
     }
+
 
 }
