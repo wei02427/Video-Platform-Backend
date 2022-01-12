@@ -1,7 +1,7 @@
 import Bucket from "../database/bucket";
 import Database from "../database/database";
-
-
+import moment from 'moment';
+import imageType from 'image-type';
 
 import path from "path";
 
@@ -9,8 +9,10 @@ import path from "path";
 export interface Video {
     ID?: number;
     title: string;
+    description: string;
     hash: string;
     uid: number;
+    upload_date: string;
 }
 
 
@@ -20,13 +22,13 @@ export default class VideoModel {
     private bucket = Bucket.getInstance();
 
 
-    public async addVideoInfo(userID: number, title: string, folderName: string) {
+    public async addVideoInfo(userID: number, title: string, description: string, folderName: string) {
 
 
-        return await this.Videos.clone().insert({ uid: userID, title, hash: folderName });
+        return await this.Videos.clone().insert({ uid: userID, title, description, hash: folderName, upload_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss') });
     }
 
-    public uploadFile(folderPath: string, folderName: string, filename: string) {
+    public uploadDashFile(folderPath: string, folderName: string, filename: string) {
 
         return this.bucket.upload(path.join(folderPath, folderName, filename), {
             destination: folderName + '/' + filename,
@@ -34,7 +36,12 @@ export default class VideoModel {
 
     }
 
+    public uploadVideoCover(cover: Buffer, folderName: string) {
 
+        const file = this.bucket.file(`${folderName}/cover.${imageType(cover)?.ext}`);
+        return file.save(cover);
+
+    }
 
 
     public async getVideo(hash: string, filename: string) {
@@ -44,6 +51,36 @@ export default class VideoModel {
         const [metaData] = await file.getMetadata();
 
         return [file, metaData];
+
+    }
+
+    public async getVideoCover(hash: string) {
+
+        const [files] = await this.bucket.getFiles({ prefix: `${hash}/cover`, delimiter: '/' });
+
+        const [metaData] = await files[0].getMetadata();
+
+        return [files[0], metaData];
+
+    }
+
+    public async getVideos(uid: number) {
+
+        return await this.Videos.clone().select('title', 'hash', 'description', 'upload_date').where('uid', '=', uid);
+
+    }
+
+    public async deleteVideo(hash: string) {
+
+
+        this.bucket.deleteFiles({ prefix: `${hash}/` })
+            .then(() => {
+                return this.Videos.clone().delete().where('hash', '=', hash);
+            }).catch(err => {
+                throw err;
+            });
+
+
 
     }
 };

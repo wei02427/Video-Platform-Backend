@@ -3,3 +3,4 @@
 /src/database/*.json
 
 src/utils/ffmpeg.exe
+src/utils/ffprobe.exe

@@ -15,7 +15,6 @@ export class AccountController extends ControllerBase {
 
     protected init(): void {
         this.accountService = new AccountService();
-
     }
 
 

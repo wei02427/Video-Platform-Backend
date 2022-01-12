@@ -1,8 +1,9 @@
 import { spawn } from 'child_process';
+import _ from 'lodash';
 import path from 'path';
 
-export default function encodeDash(videos: { path: string, bitrate: string }[], audio: string, outputFolder: string){
-    return new Promise<number | null > ((resolve, reject) => {
+export default function encodeDash(videos: { path: string, bitrate: string }[], audio: string, outputFolder: string, updateProgress: (progress: number, step: 'encodeMultiBitrate' | 'encodeDash' | 'upload') => void) {
+    return new Promise<number | null>((resolve, reject) => {
         const videoSource: string[] = [];
 
         for (const video of videos) {
@@ -16,7 +17,7 @@ export default function encodeDash(videos: { path: string, bitrate: string }[], 
             '-frag', '4000',
             '-rap',
             '-segment-name', 'segment_$RepresentationID$_',
-            '-fps', '24',
+            // '-fps', '24',
             ...videoSource,
             `${audio}#audio:id=soundtrack:role=main`,
             '-out', path.join(__dirname, '../../videos') + `/${outputFolder}/playlist.mpd`
@@ -40,7 +41,12 @@ export default function encodeDash(videos: { path: string, bitrate: string }[], 
         });
 
         child.stderr.on('data', (data) => {
-            console.error(`stderr: ${data}`);
+            const outputStr = _.toString(data);
+            if (_.startsWith(outputStr, 'Dashing P1 AS#1.1(V) seg')) {
+                const output = outputStr.split(' ');
+                const progress = _.toNumber(output[output.length - 2]);
+                updateProgress(progress + 1, 'encodeDash');
+            }
         });
 
 

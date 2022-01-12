@@ -8,9 +8,10 @@ import passport from 'passport';
 import AccountService from './main/auth/account/account.service';
 import AccountModel, { Account } from './model/account.model';
 import http from 'http';
-import io from 'socket.io';
-import _ from 'lodash';
 
+import _ from 'lodash';
+import SocketBase from './base/socket.base';
+import AccountSocket from './main/auth/account/account.socket';
 export class App {
 
   private app = express();
@@ -18,18 +19,22 @@ export class App {
   private accountService = new AccountService();
   private accountModel = new AccountModel();
   private server: http.Server;
-  private socketIo = new io.Server();
-  private users: { uid: string, socketIds: string[] }[] = [];
+
+  
+
 
 
   constructor() {
     this.setHelmet();
     this.setCors();
     this.server = http.createServer(this.app);
+
     this.setSession();
     this.setPassport();
     this.setSocket();
     this.registerRoute();
+
+
   }
 
   // ====================================================================
@@ -53,7 +58,13 @@ export class App {
   }
 
   private setCors(): void {
-    this.app.use(cors());
+    this.app.use(cors({
+      "origin": 'http://localhost:3001',
+      "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+      "credentials": true,
+      // "preflightContinue": false,
+      "optionsSuccessStatus": 204
+    }));
   }
 
   public setException(handler: ErrorRequestHandler): void {
@@ -75,29 +86,15 @@ export class App {
     }))
 
   }
-  private setSocket(): void {
-    this.socketIo.listen(this.server);
 
-    const self = this;
-    this.socketIo.on('connection', function (socket) {
+  private setSocket() {
+    SocketBase.InitSocket(this.server);
 
-
-      socket.on('user_login', function (info) {
-
-        const { uid, socketId } = info;
-        self.addUserSocketId(uid, socketId);
-        console.log(self.users);
-      });
-
-
-      socket.on('disconnect', function () {
-        console.log('user disconnected   ', socket.id);
-        self.deleteSocketId(socket.id);
-        console.log(self.users);
-      });
-    });
-
+    const accountSocket= new AccountSocket();
+    
+    SocketBase.RegisterSocketEvent(accountSocket.InitSocketEvent);
   }
+
   private setPassport() {
 
 
@@ -120,6 +117,7 @@ export class App {
   }
   private registerRoute(): void {
 
+
     this.app.use('/', (req: Request, res, next) => {
       console.log(req.user?.email, 'session user')
       next();
@@ -129,33 +127,5 @@ export class App {
   }
 
 
-  // utils
 
-  private addUserSocketId(uid: string, socketId: string) {
-
-    for (const user of this.users) {
-      if (user.uid === uid) {
-        if (!_.includes(user.socketIds, socketId))
-          user.socketIds.push(socketId);
-        return;
-      }
-    };
-
-    this.users.push({ uid, socketIds: [socketId] });
-
-
-  }
-
-  private deleteSocketId(socketId: string) {
-
-    _.forEach(this.users, user => {
-      if (_.includes(user.socketIds, socketId)) {
-        _.pull(user.socketIds, socketId);
-        return;
-      }
-    });
-
-
-
-  }
 }

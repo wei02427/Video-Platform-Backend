@@ -4,9 +4,12 @@ import { HttpStatus } from "../../../types/response.type";
 import { Strategy, VerifyFunction } from "passport-local";
 import passport from "passport";
 import { NextFunction, Request, Response } from "express";
+import SocketBase from "../../../base/socket.base";
 export default class AccountService {
 
     private accountModel = new AccountModel();
+
+
 
     public get Strategy() {
         return new Strategy(
@@ -26,6 +29,7 @@ export default class AccountService {
     }
 
     private verifyUserFlow(): VerifyFunction {
+
         return (email: string, password: string, done) => {
             this.accountModel.getAccountByEmail(email)
                 .then(user => {
@@ -79,7 +83,11 @@ export default class AccountService {
                     return reject(err);
                 }
 
+
+
                 req.logIn(user, function (err) {
+
+
                     if (err) {
 
                         const error = new Error('Not found User');
@@ -103,5 +111,10 @@ export default class AccountService {
     public async removeSubscriber(subscriber: number, uid: number) {
         this.accountModel.removeSubscriberByID(subscriber, uid);
     }
+
+
+
+
+
 
 }

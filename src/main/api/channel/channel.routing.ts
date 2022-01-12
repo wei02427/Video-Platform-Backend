@@ -23,6 +23,20 @@ export class VideoRoute extends RouteBase {
 
     this.router.get('/watch/:hash/:filename', express.json(), this.controller.getVideo);
 
+    this.router.get('/library',
+      // this.controller.ensureAuthenticated,
+      express.json(),
+      this.responseHandler(this.controller.getLibrary));
+
+    this.router.get('/video/cover/:hash',
+      this.responseHandler(this.controller.getVideoCover));
+
+    this.router.delete('/video/:hash',
+      this.controller.ensureAuthenticated,
+      express.json(),
+      this.responseHandler(this.controller.deleteVideo)
+    );
+
     this.router.post('/addSubscriber',
       this.controller.ensureAuthenticated,
       express.json(),

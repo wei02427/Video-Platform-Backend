@@ -25,14 +25,18 @@ export class VideoController extends ControllerBase {
 
     public async upload(req: Request, res: Response, next: NextFunction): Promise<ResponseObject> {
 
-        const { title } = req.body;
-        const user = req.user;
 
-        console.log(user)
-        const folderName = crypto.createHash('md5').update(title + user!.id + Date.now().toString()).digest('hex');
+        const user = req.user;
+        const { title, description } = req.body;
 
         const file = (req.files!.video as UploadedFile);
-        await this.videoService.upload(user!.id!, title, folderName, file.data);
+        const img = (req.files!.img as UploadedFile);
+
+        const folderName = crypto.createHash('md5').update(file.name + user!.id + Date.now().toString()).digest('hex');
+
+
+
+        await this.videoService.upload(user!.id!, title, description, folderName, file.data, img.data);
 
         return this.formatResponse('ok', HttpStatus.OK);
     }
@@ -43,7 +47,7 @@ export class VideoController extends ControllerBase {
     @Autobind
     public async getVideo(req: Request, res: Response, next: NextFunction) {
 
-        const range = req.headers.range;
+
         const { hash, filename } = req.params;
         const [file, metaData] = await this.videoService.getVideo(hash, filename);
 
@@ -55,6 +59,40 @@ export class VideoController extends ControllerBase {
 
         file.createReadStream().pipe(res);
 
+    }
+
+
+    @Autobind
+    public async getLibrary(req: Request, res: Response, next: NextFunction) {
+
+        const id: number = req.user ? req.user.id! : _.toNumber(req.params.id);
+
+        const result = await this.videoService.getVideos(id);
+        return this.formatResponse(result, HttpStatus.OK);
+
+    }
+
+    @Autobind
+    public async getVideoCover(req: Request, res: Response, next: NextFunction) {
+
+        const hash: string = req.params.hash
+
+        const [file, metaData] = await this.videoService.getVideoCover(hash);
+        // return this.formatResponse(result, HttpStatus.OK);
+
+        res.contentType(metaData.contentType);
+        file.createReadStream().pipe(res);
+    }
+
+    @Autobind
+    public async deleteVideo(req: Request, res: Response, next: NextFunction) {
+
+        const hash: string = req.params.hash
+
+        const result = await this.videoService.deleteVideo(hash);
+        // return this.formatResponse(result, HttpStatus.OK);
+
+        return this.formatResponse('ok', HttpStatus.OK);
     }
 
     public async addSubscriber(req: Request, res: Response, next: NextFunction) {
