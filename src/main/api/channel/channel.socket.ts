@@ -14,6 +14,7 @@ export default class ChannelSocket extends SocketBase {
     }
 
     public emitUploadProgress(uid: number, progress: number) {
+        console.log(progress)
         SocketBase.socketIo.to(this.getSocketsByUid(uid))
             .emit('upload_progress', progress);
     }

@@ -2,10 +2,7 @@ import Bucket from "../database/bucket";
 import Database from "../database/database";
 import moment from 'moment';
 import imageType from 'image-type';
-
 import path from "path";
-
-
 export interface Video {
     ID?: number;
     title: string;
@@ -72,15 +69,17 @@ export default class VideoModel {
 
     public async deleteVideo(hash: string) {
 
+        return new Promise<number>((reslove, reject) => {
+            this.bucket.deleteFiles({ prefix: `${hash}/` })
+                .then(() => {
+                    this.Videos.clone().delete().where('hash', '=', hash)
+                        .then(res => reslove(res))
+                        .catch(err => reject(err));
+                }).catch(err => {
+                    reject(err);
+                });
 
-        this.bucket.deleteFiles({ prefix: `${hash}/` })
-            .then(() => {
-                return this.Videos.clone().delete().where('hash', '=', hash);
-            }).catch(err => {
-                throw err;
-            });
-
-
+        })
 
     }
 };

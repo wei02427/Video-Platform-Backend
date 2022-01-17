@@ -3,6 +3,7 @@ import tmp from 'tmp';
 import fs from 'fs';
 import _ from 'lodash';
 
+import path from "path";
 
 export const enum Bitrate {
     LOW_235K_240P = 235,
@@ -33,7 +34,7 @@ export default function encodeMultiBitrate(data: Buffer, bitrates: Bitrate[], up
         let frames: number;
         let currentFrames = Array<number>(bitrates.length).fill(0);;
 
-        tmp.file(async function _tempFileCreated(err: any, path: any, fd: any, cleanupTmpCallback: () => void) {
+        tmp.file(async function _tempFileCreated(err: any, tmpPath: any, fd: any, cleanupTmpCallback: () => void) {
 
 
             function setStepFinish(step: number) {
@@ -49,93 +50,95 @@ export default function encodeMultiBitrate(data: Buffer, bitrates: Bitrate[], up
 
             if (err) reject(err);
 
-            fs.appendFile(path, data, () => { });
+            fs.appendFile(tmpPath, data, () => {
 
-            console.log('File: ', path);
-            console.log('Filedescriptor: ', fd);
-
-
-            console.log(path)
-            Ffmpeg.setFfmpegPath(__dirname + '/ffprobe');
-            Ffmpeg.ffprobe(path,
-                [
-                    // '-v error',
-                    // '-select_streams v:0',
-                    '-count_packets',
-                    // '-show_entries stream=nb_read_packets',
-                    // '-of csv=p=0'
-                ], function (err, metadata) {
-                    frames = _.toNumber(metadata.streams[0].nb_read_packets) * bitrates.length;
-                    console.log(frames);
-                });
+                console.log('File: ', tmpPath);
+                console.log('Filedescriptor: ', fd);
 
 
-            // 產生不同解析度影片
-            for (const [index, bitrate] of bitrates.entries()) {
+                // tmpPath = path.join("../../..", tmpPath);
+                // Ffmpeg.setFfmpegPath(__dirname + '/ffprobe');
+                Ffmpeg.ffprobe(tmpPath,
+                    [
+                        // '-v error',
+                        // '-select_streams v:0',
+                        '-count_packets',
+                        // '-show_entries stream=nb_read_packets',
+                        // '-of csv=p=0'
+                    ], function (err, metadata) {
+                        console.log(err);
+                        frames = _.toNumber(metadata.streams[0].nb_read_packets) * bitrates.length;
+                        console.log(frames);
+                    });
 
 
-                videosTmp.push(tmp.fileSync({ postfix: '.mp4' }));
+                // 產生不同解析度影片
+                for (const [index, bitrate] of bitrates.entries()) {
 
 
-                Ffmpeg(path)
-                    .setFfmpegPath(__dirname + '/ffmpeg')
-                    .videoCodec('libx264').outputOptions([
+                    videosTmp.push(tmp.fileSync({ postfix: '.mp4' }));
+
+
+                    Ffmpeg(tmpPath)
+                        // .setFfmpegPath(__dirname + '/ffmpeg')
+                        .videoCodec('libx264').outputOptions([
+                            '-y',
+                            // '-r 24',
+                            `-x264opts keyint=48:min-keyint=48:no-scenecut`,
+                            `-vf scale=-2:${scale[bitrate]}`,
+                            `-b:v ${bitrate}k`,
+                            `-maxrate ${bitrate}k`,
+                            '-movflags faststart',
+                            '-bufsize 8600k',
+                            '-profile:v main',
+                            '-preset fast',
+                            '-progress pipe:2'
+                        ]).on('stderr', (info: string) => {
+
+                            if (_.startsWith(info, 'frame=') && !_.includes(info, 'fps')) {
+
+                                currentFrames[index] = _.toNumber(info.split('=')[1]);
+                                updateProgress(_.toInteger(_.sum(currentFrames) / frames * 100), 'encodeMultiBitrate');
+                                // console.log(index, ' ', currentFrames[index], ' ', progress.encodeMultiBitrate);
+                            }
+
+                        }).on('end', (_: any) => {
+
+                            // console.log('finish ' + bitrate);
+                            setStepFinish(index);
+
+                        }).on('error', (err, stdout, stderr) => {
+                            reject(err);
+                        }).noAudio().save(videosTmp[index].name);
+
+
+
+
+
+                }
+
+                // 抽出音檔
+                Ffmpeg({ source: tmpPath })
+                    // .setFfmpegPath(__dirname + '/ffmpeg')
+                    .outputOptions([
                         '-y',
-                        // '-r 24',
-                        `-x264opts keyint=48:min-keyint=48:no-scenecut`,
-                        `-vf scale=-2:${scale[bitrate]}`,
-                        `-b:v ${bitrate}k`,
-                        `-maxrate ${bitrate}k`,
-                        '-movflags faststart',
-                        '-bufsize 8600k',
-                        '-profile:v main',
-                        '-preset fast',
-                        '-progress pipe:2'
-                    ]).on('stderr', (info: string) => {
+                        '-map 0:1',
+                        `-vn`,
+                        `-c:a aac`,
+                        `-b:a 128k`,
+                        `-ar 48000`,
+                        '-ac 2'
+                    ]).on('end', (_: any) => {
+                        console.log('finish audio');
 
-                        if (_.startsWith(info, 'frame=') && !_.includes(info, 'fps')) {
-
-                            currentFrames[index] = _.toNumber(info.split('=')[1]);
-                            updateProgress(_.toInteger(_.sum(currentFrames) / frames * 100), 'encodeMultiBitrate');
-                            // console.log(index, ' ', currentFrames[index], ' ', progress.encodeMultiBitrate);
-                        }
-
-                    }).on('end', (_: any) => {
-
-                        // console.log('finish ' + bitrate);
-                        setStepFinish(index);
+                        setStepFinish(bitrates.length);
 
                     }).on('error', (err, stdout, stderr) => {
                         reject(err);
-                    }).noAudio().save(videosTmp[index].name);
+                    })
+                    .save(audioTmp.name)
 
-
-
-
-
-            }
-
-            // 抽出音檔
-            Ffmpeg({ source: path })
-                .setFfmpegPath(__dirname + '/ffmpeg')
-                .outputOptions([
-                    '-y',
-                    '-map 0:1',
-                    `-vn`,
-                    `-c:a aac`,
-                    `-b:a 128k`,
-                    `-ar 48000`,
-                    '-ac 2'
-                ]).on('end', (_: any) => {
-                    console.log('finish audio');
-
-                    setStepFinish(bitrates.length);
-
-                }).on('error', (err, stdout, stderr) => {
-                    reject(err);
-                })
-                .save(audioTmp.name)
-
+            });
         });
 
     });

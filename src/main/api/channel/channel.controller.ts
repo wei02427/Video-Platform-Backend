@@ -89,7 +89,7 @@ export class VideoController extends ControllerBase {
 
         const hash: string = req.params.hash
 
-        const result = await this.videoService.deleteVideo(hash);
+        await this.videoService.deleteVideo(hash);
         // return this.formatResponse(result, HttpStatus.OK);
 
         return this.formatResponse('ok', HttpStatus.OK);

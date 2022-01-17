@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  api:
+    image: node:alpine
+    container_name: video-platform-node
+    build:
+      context: ./
+    ports:
+      - 3000:3000
+    environment:
+      - NDOE_ENV=local
+      - ES_HOST=elasticsearch
+      - NODE_PORT=3000
+      - ELASTIC_URL=http://elasticsearch:9200
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run dev
+    links:
+      - elasticsearch
+    depends_on:
+      - elasticsearch
+    networks:
+      - esnet
+
+  elasticsearch:
+    container_name: elsticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    logging:
+      driver: none
+    ports:
+      - 9300:9300
+      - 9200:9200
+    networks:
+      - esnet
+volumes:
+  esdata: null
+networks:
+  esnet: null

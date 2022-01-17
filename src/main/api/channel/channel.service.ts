@@ -7,9 +7,10 @@ import fs from 'fs';
 import path from "path";
 import _ from "lodash";
 import ChannelSocket from "./channel.socket";
+import ElasticsearchModel from "../../../model/elasticsearch.model";
 export class VideoService {
     private videoModel = new VideoModel();
-
+    private searchModel = new ElasticsearchModel();
     private channelSocket = new ChannelSocket();
 
     public async upload(userID: number, title: string, description: string, folderName: string, video: Buffer, img: Buffer) {
@@ -21,7 +22,7 @@ export class VideoService {
 
         const updateProgress = (progress: number, step: 'encodeMultiBitrate' | 'encodeDash' | 'upload') => {
             stepProgress[step] = progress * 0.25;
-
+            console.log(stepProgress)
             const totalProgress = _.reduce(stepProgress, function (result, value, key) {
                 result += value;
                 return result;
@@ -61,9 +62,9 @@ export class VideoService {
                         this.videoModel.uploadDashFile(folderPath, folderName, filename)
                             .then(() => {
                                 uploadCount++;
-
+                                // console.log(uploadCount, ' ', mpegDashFiles.length);
                                 updateProgress(uploadCount / mpegDashFiles.length * 100, 'upload');
-
+                                // console.log('upload', uploadCount)
                                 if (uploadCount === mpegDashFiles.length) {
                                     this.channelSocket.emitUploadFinish(userID, folderName);
                                     this.videoModel.uploadVideoCover(img, folderName).then(() => resolve());
@@ -79,9 +80,11 @@ export class VideoService {
 
                 })
 
-            }).then(() => {
+            }).then(async () => {
 
-                this.videoModel.addVideoInfo(userID, title, description, folderName);
+                const vid = (await this.videoModel.addVideoInfo(userID, title, description, folderName))[0];
+                console.log('vid', vid)
+                this.searchModel.insertNewVideo(title, description, folderName).then(r => console.log(r));
                 // // 上傳後刪除資料夾
                 fs.rmdir(path.join(folderPath, folderName), { recursive: true }, (err) => {
                     if (err) {
@@ -113,7 +116,11 @@ export class VideoService {
     }
 
     public async deleteVideo(hash: string) {
-        return await this.videoModel.deleteVideo(hash);
+        return this.videoModel.deleteVideo(hash)
+            .then(result   => {
+                console.log(result);
+                this.searchModel.removeVideo(hash);
+            });
     }
 }
 

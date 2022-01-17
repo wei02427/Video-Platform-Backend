@@ -12,6 +12,7 @@ import http from 'http';
 import _ from 'lodash';
 import SocketBase from './base/socket.base';
 import AccountSocket from './main/auth/account/account.socket';
+
 export class App {
 
   private app = express();
@@ -20,7 +21,7 @@ export class App {
   private accountModel = new AccountModel();
   private server: http.Server;
 
-  
+
 
 
 
@@ -33,7 +34,6 @@ export class App {
     this.setPassport();
     this.setSocket();
     this.registerRoute();
-
 
   }
 
@@ -90,8 +90,8 @@ export class App {
   private setSocket() {
     SocketBase.InitSocket(this.server);
 
-    const accountSocket= new AccountSocket();
-    
+    const accountSocket = new AccountSocket();
+
     SocketBase.RegisterSocketEvent(accountSocket.InitSocketEvent);
   }
 
