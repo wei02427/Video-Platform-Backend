@@ -4,7 +4,6 @@ import { HttpStatus } from "../../../types/response.type";
 import { Strategy, VerifyFunction } from "passport-local";
 import passport from "passport";
 import { NextFunction, Request, Response } from "express";
-import SocketBase from "../../../base/socket.base";
 export default class AccountService {
 
     private accountModel = new AccountModel();
@@ -14,7 +13,7 @@ export default class AccountService {
     public get Strategy() {
         return new Strategy(
             {
-                // 改以名為 email 的欄位資訊作為帳號
+                // 以 email 的欄位資訊作為帳號
                 usernameField: 'email'
             },
             this.verifyUserFlow()
@@ -22,7 +21,8 @@ export default class AccountService {
     }
 
     private verifyPassword(user: Account, password: string) {
-        const { password: hashPw, salt, name } = user;
+
+        const { password: hashPw, salt } = user;
         const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha256').toString();
 
         return hash === hashPw;
@@ -53,7 +53,7 @@ export default class AccountService {
     public async register(name: string, email: string, password: string) {
 
         const isExist = (await this.accountModel.getAccountByEmail(email));
-        console.log(isExist)
+
 
         if (isExist !== null) {
             const error = new Error('電子信箱已被使用');
@@ -61,6 +61,7 @@ export default class AccountService {
             throw error;
         }
 
+        // salt 加在 password 再 hash
         const salt = crypto.randomBytes(16).toString('hex');
         const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha256').toString();
 
@@ -79,14 +80,10 @@ export default class AccountService {
         return new Promise<Account>((resolve, reject) => {
             passport.authenticate('local', (err: Error, user: Account) => {
                 if (err) {
-
                     return reject(err);
                 }
 
-
-
                 req.logIn(user, function (err) {
-
 
                     if (err) {
 

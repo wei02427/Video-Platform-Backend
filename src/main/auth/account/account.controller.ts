@@ -1,10 +1,8 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import {  Request, Response, NextFunction } from 'express';
 import _ from 'lodash';
-import passport from 'passport';
 
 import { ControllerBase } from "../../../base/controller.base";
-import { ResponseObject } from "../../../common/response/response.object";
-import AccountModel, { Account } from "../../../model/account.model";
+
 import { HttpStatus } from "../../../types/response.type";
 import AccountService from "./account.service";
 
@@ -35,6 +33,12 @@ export class AccountController extends ControllerBase {
         return this.formatResponse('ok', HttpStatus.OK);
 
     }
+
+    public async authenticated(req: Request, res: Response, next: NextFunction) {
+
+        return this.formatResponse('ok', HttpStatus.OK);
+    }
+
 
     public async register(req: Request, res: Response, next: NextFunction) {
 

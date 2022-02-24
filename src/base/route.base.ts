@@ -1,10 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { ControllerBase } from './controller.base';
-
 import { HttpStatus } from '../types/response.type';
-
 import { ResponseObject } from '../common/response/response.object';
-import session from 'express-session';
 
 export abstract class RouteBase {
 
@@ -22,6 +19,7 @@ export abstract class RouteBase {
 
   protected abstract registerRoute(): void;
 
+  // 統一 catch router error
   protected responseHandler(method: (req: Request, res: Response, next: NextFunction) => Promise<ResponseObject> | Promise<void>, controller = this.controller) {
 
     return (req: Request, res: Response, next: NextFunction) => {

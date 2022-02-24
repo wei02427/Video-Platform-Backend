@@ -1,6 +1,8 @@
 import _ from "lodash";
 import Database from "../database/database";
-
+import type { IncomingMessage } from 'http';
+import type { SessionData } from 'express-session';
+import type { Socket } from 'socket.io';
 export interface Account {
     id?: number;
     name: string;
@@ -12,9 +14,17 @@ export interface Account {
 
 declare module 'express-session' {
     interface SessionData {
-        user: string;
+        user: string
     }
 }
+
+interface SessionIncomingMessage extends IncomingMessage {
+    session: { passport: SessionData }
+};
+
+export interface SessionSocket extends Socket {
+    request: SessionIncomingMessage
+};
 
 declare global {
     namespace Express {
@@ -45,9 +55,9 @@ export default class AccountModel {
     public async addSubscriberByID(subscriber: number, id: number) {
 
         const subscribers = await this.getSubscribesByID(id);
-        subscribers.push(subscriber.toString());
+        subscribers.push(subscriber);
 
-        const result = await this.Accounts.clone().update('subscribers', subscribers.join(',')).where('id', '=', id);
+        const result = await this.Accounts.clone().update('subscribers', _.uniq(subscribers).join(',')).where('id', '=', id);
 
         return result;
     }
@@ -55,7 +65,7 @@ export default class AccountModel {
     public async removeSubscriberByID(subscriber: number, id: number) {
 
         const subscribers = await this.getSubscribesByID(id);
-        _.pull(subscribers,subscriber.toString());
+        _.pull(subscribers, subscriber);
 
         const result = await this.Accounts.clone().update('subscribers', subscribers.join(',')).where('id', '=', id);
 
@@ -66,6 +76,11 @@ export default class AccountModel {
     public async getSubscribesByID(id: number) {
         const result = await this.Accounts.clone().select('subscribers').where('id', '=', id);
 
-        return _.split(result[0].subscribers, ',');
+        return _.map(_.split(result[0].subscribers, ','), _.toNumber);
+    }
+
+    public async checkIsSubscriber(uid: number, channelId: number) {
+        const subscribers = await this.getSubscribesByID(channelId);
+        return _.includes(subscribers, uid);
     }
 };

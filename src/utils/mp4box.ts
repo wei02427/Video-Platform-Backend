@@ -26,6 +26,7 @@ export default function encodeDash(videos: { path: string, bitrate: string }[], 
 
         child.on('exit', (code) => {
             console.log(`Child process exited with code ${code}`);
+            updateProgress(100, 'encodeDash');
             resolve(code);
         });
 
@@ -44,12 +45,12 @@ export default function encodeDash(videos: { path: string, bitrate: string }[], 
             console.log(outputStr)
             if (_.includes(outputStr, 'MPD') && _.includes(outputStr, '%')) {
                 const output = outputStr.split(' ');
-               
+
                 const progress = _.toNumber(output[output.length - 2]);
-                updateProgress(progress + 1, 'encodeDash');
-            } 
-        }); 
+                updateProgress(progress, 'encodeDash');
+            }
+        });
 
  
-    }); 
+    });
 }

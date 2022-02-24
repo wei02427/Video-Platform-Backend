@@ -12,7 +12,9 @@ import http from 'http';
 import _ from 'lodash';
 import SocketBase from './base/socket.base';
 import AccountSocket from './main/auth/account/account.socket';
-
+// import sharedsession from "express-socket.io-session";
+// import FileStore from 'session-file-store';
+import { Socket } from 'socket.io';
 export class App {
 
   private app = express();
@@ -32,9 +34,9 @@ export class App {
 
     this.setSession();
     this.setPassport();
-    this.setSocket();
-    this.registerRoute();
 
+    this.registerRoute();
+    this.setSocket();
   }
 
   // ====================================================================
@@ -42,7 +44,6 @@ export class App {
   // ====================================================================
 
   public bootstrap(): void {
-    // this.app.listen(3000, () => console.log(`API Server is running at port ${3000}.`));
 
     this.server.listen(3000, () => {
       console.log(`API Server is running at port ${3000}.`);
@@ -55,6 +56,7 @@ export class App {
 
   private setHelmet(): void {
     this.app.use(helmet());
+
   }
 
   private setCors(): void {
@@ -62,7 +64,6 @@ export class App {
       "origin": 'http://localhost:3001',
       "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
       "credentials": true,
-      // "preflightContinue": false,
       "optionsSuccessStatus": 204
     }));
   }
@@ -73,17 +74,25 @@ export class App {
 
   private setSession(): void {
 
-    this.app.use(session({
+    const sessionMiddleware = session({
       secret: 'mySecret',
       name: 'user',
       saveUninitialized: false,
       resave: true,
       cookie: {
         path: '/',
-        maxAge: 1000 * 60 * 10, // 設定 session 的有效時間，單位毫秒
+        maxAge: 1000 * 60 * 60 * 60, // 設定 session 的有效時間，單位毫秒
         httpOnly: true
       }
-    }))
+    });
+
+    const wrapper = (middleware: any) => (socket: Socket, next: any) => middleware(socket.request, {}, next);
+
+    // 讓 socket 存取 session
+    SocketBase.socketIo.use(wrapper(sessionMiddleware));
+
+    this.app.use(sessionMiddleware);
+
 
   }
 
@@ -99,14 +108,15 @@ export class App {
 
 
     passport.use(this.accountService.Strategy);
+
+    // 驗證成功後將 user.id 存入 session 中
     passport.serializeUser<number>(function (user, done) {
       done(null, user.id);
     });
+    
+    //passport.deserializeUser() 會將 session 中的 user 資訊附加到 req.user 上 
     passport.deserializeUser<number>(async (userID, done) => {
-
-
       const user = await this.accountModel.getAccountByID(userID);
-
       done(null, user);
     });
 
@@ -119,7 +129,7 @@ export class App {
 
 
     this.app.use('/', (req: Request, res, next) => {
-      console.log(req.user?.email, 'session user')
+      console.log(req.user?.email, 'request user')
       next();
     })
 

@@ -3,6 +3,7 @@ import Database from "../database/database";
 import moment from 'moment';
 import imageType from 'image-type';
 import path from "path";
+
 export interface Video {
     ID?: number;
     title: string;
@@ -51,6 +52,20 @@ export default class VideoModel {
 
     }
 
+
+    public async getVideoInfo(hash: string) {
+
+        const knex =  Database.getInstance();
+        const info = await this.Videos.clone()
+            .where('hash', '=', hash)
+            .innerJoin('accounts', 'accounts.id', 'videos.uid')
+            .select('title', 'description', 'upload_date',knex.raw(`accounts.id  as "uid"`),knex.raw(`accounts.name  as "name"`))
+            .first();
+
+        return info;
+
+    }
+
     public async getVideoCover(hash: string) {
 
         const [files] = await this.bucket.getFiles({ prefix: `${hash}/cover`, delimiter: '/' });
@@ -61,9 +76,10 @@ export default class VideoModel {
 
     }
 
-    public async getVideos(uid: number) {
+    public async getVideosByUid(uid: number) {
 
-        return await this.Videos.clone().select('title', 'hash', 'description', 'upload_date').where('uid', '=', uid);
+        const result = await this.Videos.clone().select('title', 'hash', 'description', 'upload_date').where('uid', '=', uid);
+        return result;
 
     }
 
@@ -81,5 +97,12 @@ export default class VideoModel {
 
         })
 
+    }
+
+    public async getRandomVideos(limit = 100) {
+
+        const result = await this.Videos.clone().select('hash', 'title', 'description', 'upload_date').orderByRaw('RAND()').limit(limit);
+
+        return result;
     }
 };

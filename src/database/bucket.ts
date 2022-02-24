@@ -7,11 +7,11 @@ export default class Bucket {
     public static getInstance() {
         if (!this.instance) {
             const storage = new Storage({
-                projectId: 'video-platform-335208',
+                projectId: process.env.PROJECT_ID,
                 keyFilename: './src/database/video-platform-335208-95b4b183342d.json'
             });
 
-            // Get a reference to the bucket
+
             this.instance = storage.bucket('video_platform');
 
 
@@ -19,5 +19,5 @@ export default class Bucket {
         return this.instance;
     }
 
-   
+
 }

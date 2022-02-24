@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { UploadedFile } from 'express-fileupload';
 
 import { ControllerBase } from '../../../base/controller.base';
 import _ from 'lodash';
@@ -9,6 +8,7 @@ import Autobind from '../../../utils/autobind';
 
 export class SearchController extends ControllerBase {
     private searchService!: SearchService;
+    
 
     protected init(): void {
         this.searchService = new SearchService();
@@ -18,11 +18,17 @@ export class SearchController extends ControllerBase {
     public async search(req: Request, res: Response, next: NextFunction) {
 
         const { parm } = req.params;
-        // console.log(parm, 'fku');
-        const result = await this.searchService.getVideos({ text: parm });
-        // console.log(result);
+        const result = await this.searchService.searchVideos({ text: parm });
+
         return this.formatResponse(result, HttpStatus.OK);
     }
 
 
+    @Autobind
+    public async getRandomVideos(req: Request, res: Response, next: NextFunction) {
+
+        const result = await this.searchService.getRandomVideos();
+        
+        return this.formatResponse(result, HttpStatus.OK);
+    }
 }

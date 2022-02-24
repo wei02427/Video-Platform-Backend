@@ -5,7 +5,7 @@ import { ControllerBase } from '../../../base/controller.base';
 import { ResponseObject } from '../../../common/response/response.object';
 
 import { HttpStatus } from '../../../types/response.type';
-import { VideoService } from './channel.service';
+import { ChannelService } from './channel.service';
 import crypto from 'crypto';
 
 
@@ -15,11 +15,11 @@ import AccountService from '../../auth/account/account.service';
 import _ from 'lodash';
 
 export class VideoController extends ControllerBase {
-    private videoService!: VideoService;
+    private channelService!: ChannelService;
     private accountService!: AccountService;
 
     protected init(): void {
-        this.videoService = new VideoService();
+        this.channelService = new ChannelService();
         this.accountService = new AccountService();
     }
 
@@ -36,7 +36,7 @@ export class VideoController extends ControllerBase {
 
 
 
-        await this.videoService.upload(user!.id!, title, description, folderName, file.data, img.data);
+        await this.channelService.upload(user!.id!, title, description, folderName, file.data, img.data);
 
         return this.formatResponse('ok', HttpStatus.OK);
     }
@@ -49,7 +49,7 @@ export class VideoController extends ControllerBase {
 
 
         const { hash, filename } = req.params;
-        const [file, metaData] = await this.videoService.getVideo(hash, filename);
+        const [file, metaData] = await this.channelService.getVideo(hash, filename);
 
 
         res.set({
@@ -65,11 +65,37 @@ export class VideoController extends ControllerBase {
     @Autobind
     public async getLibrary(req: Request, res: Response, next: NextFunction) {
 
-        const id: number = req.user ? req.user.id! : _.toNumber(req.params.id);
+        const id: number = req.params.uid ? _.toNumber(req.params.uid) : req.user!.id!;
 
-        const result = await this.videoService.getVideos(id);
+        const videos = await this.channelService.getVideosByUid(id);
+
+        let result = {};
+
+        // 如果 api 附帶 uid 資訊，就是查看別人的頻道
+        if (req.params.uid) {
+            const uid = req.user?.id;
+
+            const name = await this.channelService.getChannelName(id);
+            const isSubscriber = uid ? await this.channelService.checkSubscriber(uid, id) : false;
+
+            result = { name, isSubscriber };
+        }
+
+        result = { ...result, videos };
+
         return this.formatResponse(result, HttpStatus.OK);
 
+    }
+
+    @Autobind
+    public async getVideoInfo(req: Request, res: Response, next: NextFunction) {
+
+        const hash: string = req.params.hash;
+        const uid = req.user?.id;
+        const info = await this.channelService.getVideoInfo(hash);
+
+        const isSubscriber = uid ? await this.channelService.checkSubscriber(uid, info.uid) : false;
+        return this.formatResponse({ ...info, isSubscriber }, HttpStatus.OK);
     }
 
     @Autobind
@@ -77,8 +103,7 @@ export class VideoController extends ControllerBase {
 
         const hash: string = req.params.hash
 
-        const [file, metaData] = await this.videoService.getVideoCover(hash);
-        // return this.formatResponse(result, HttpStatus.OK);
+        const [file, metaData] = await this.channelService.getVideoCover(hash);
 
         res.contentType(metaData.contentType);
         file.createReadStream().pipe(res);
@@ -89,8 +114,7 @@ export class VideoController extends ControllerBase {
 
         const hash: string = req.params.hash
 
-        await this.videoService.deleteVideo(hash);
-        // return this.formatResponse(result, HttpStatus.OK);
+        await this.channelService.deleteVideo(hash);
 
         return this.formatResponse('ok', HttpStatus.OK);
     }

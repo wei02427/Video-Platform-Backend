@@ -1,6 +1,5 @@
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import { RouteBase } from "../../../base/route.base";
-import { HttpStatus } from "../../../types/response.type";
 import { AccountController } from "./account.controller";
 
 
@@ -30,6 +29,12 @@ export class AccountRoute extends RouteBase {
       express.json(),
       this.responseHandler(this.controller.register)
     );
+
+    this.router.get('/authenticated',
+      this.controller.ensureAuthenticated,
+      this.responseHandler(this.controller.authenticated)
+    )
+
 
 
 

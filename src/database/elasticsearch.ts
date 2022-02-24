@@ -1,5 +1,4 @@
 import { Client } from "@elastic/elasticsearch";
-import dotenv from "dotenv";
 import { index, type } from "../model/elasticsearch.model";
 
 
@@ -11,17 +10,15 @@ export default class Elasticsearch {
 
     public static getInstance() {
         if (!this.instance) {
-            dotenv.config();
             const elasticUrl = process.env.ELASTIC_URL || "http://localhost:9200";
             this.instance = new Client({ node: elasticUrl });
-
         }
         return this.instance;
 
     }
 
 
-
+    // 定義資料表 index = table
     public async createIndex(index: string) {
         try {
 
@@ -36,12 +33,12 @@ export default class Elasticsearch {
         }
     }
 
-
-    public async setQuotesMapping() {
+    // 定義欄位名稱 & 類型 mapping = schema
+    public async setVideosMapping() {
         try {
             const schema = {
                 title: {
-                    type: "text"
+                    type: "search_as_you_type"
                 },
                 description: {
                     type: "text"
@@ -64,12 +61,6 @@ export default class Elasticsearch {
             console.error(err);
         }
     }
-
-    /**
-     * @function checkConnection
-     * @returns {Promise<Boolean>}
-     * @description Checks if the client is connected to ElasticSearch
-     */
 
     public checkConnection() {
         return new Promise(async (resolve) => {

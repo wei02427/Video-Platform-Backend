@@ -1,11 +1,9 @@
 import { HttpStatus } from '../types/response.type';
 import { ResponseObject } from '../common/response/response.object';
-import Database from '../database/database';
-import {  Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Autobind from '../utils/autobind';
 
 export abstract class ControllerBase {
-  // protected db = Database.getInstance();
 
 
   constructor() {
@@ -27,6 +25,7 @@ export abstract class ControllerBase {
     return responseObject;
   }
 
+  // 確保使用者登入才能進入 api
   @Autobind
   public ensureAuthenticated(req: Request, res: Response, next: NextFunction) {
 

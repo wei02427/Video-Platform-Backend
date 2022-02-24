@@ -9,14 +9,16 @@ export const type = "video";
 export default class ElasticsearchModel {
     private esclient = Elasticsearch.getInstance();
 
-    public async getVideos(parm: { text: string, page?: number, limit?: number }) {
+    public async searchVideos(parm: { text: string, page?: number, limit?: number }) {
 
         const query = {
             query: {
                 multi_match: {
                     query: parm.text,
-                    fields: ["title", "description"],
-                    operator: "or"
+                    fields: ["title", "title._2gram", "title._3gram"
+                        , "description"
+                    ],
+                    "type": "bool_prefix",
                 }
 
             }
@@ -38,7 +40,7 @@ export default class ElasticsearchModel {
                 description: hit._source.description,
                 score: hit._score
             }
-        });
+        }); 
 
         return {
             results,

@@ -9,14 +9,11 @@ services:
     ports:
       - 3000:3000
     environment:
-      - NDOE_ENV=local
-      - ES_HOST=elasticsearch
-      - NODE_PORT=3000
       - ELASTIC_URL=http://elasticsearch:9200
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-    command: npm run dev
+    command: npm run ${NODE_ENV}
     links:
       - elasticsearch
     depends_on:

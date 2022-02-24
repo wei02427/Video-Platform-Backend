@@ -4,18 +4,14 @@
 import { App } from './app';
 import { DefaultException } from './exception/default.exception';
 import Elasticsearch from './database/elasticsearch';
-import { index, type } from './model/elasticsearch.model';
+import { index } from './model/elasticsearch.model';
+import dotenv from "dotenv";
 
 
-const esAction = {
-    index: {
-        _index: index,
-        _type: type
-    }
-};
 
 
-const bootstrap = async () => {
+
+(async () => {
 
 
     const esclient = Elasticsearch.getInstance();
@@ -23,15 +19,16 @@ const bootstrap = async () => {
     const elastic = new Elasticsearch();
     const isElasticReady = await elastic.checkConnection();
 
+    dotenv.config();
 
+    // 確保 Elasticsearch 啟動後再啟動 app
     if (isElasticReady) {
 
         const elasticIndex = await esclient.indices.exists({ index: index });
 
-        // console.log(elasticIndex.body)
         if (!elasticIndex.body) {
             await elastic.createIndex(index);
-            await elastic.setQuotesMapping(); 
+            await elastic.setVideosMapping();
         }
 
 
@@ -41,6 +38,6 @@ const bootstrap = async () => {
 
     }
 
-};
+})();
 
-bootstrap();
+
