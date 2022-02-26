@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   api:
-    image: node:alpine
+    # image: node:alpine
     container_name: video-platform-node
     build:
       context: ./

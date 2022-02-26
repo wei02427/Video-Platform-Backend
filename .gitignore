@@ -2,5 +2,6 @@
 
 /src/database/*.json
 
+/dist
 
 .env

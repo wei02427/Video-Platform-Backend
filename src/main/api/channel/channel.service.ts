@@ -72,7 +72,7 @@ export class ChannelService {
                                     this.videoModel.uploadVideoCover(img, folderName).then(() => resolve());
 
                                 }
-
+ 
                             })
                             .catch(err => reject(err));
 

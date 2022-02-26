@@ -20,7 +20,7 @@ export default class AccountSocket extends SocketBase {
 
 
             const uid = socket.request.session.passport?.user;
-
+            console.log('socket.request.session.passport?.user', uid);
             // 如過使用者已登入 socket id 才紀錄
             if (!_.isUndefined(uid)) {
                 console.log('user connected   ', socket.id);
