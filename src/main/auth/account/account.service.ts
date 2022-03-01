@@ -8,7 +8,7 @@ export default class AccountService {
 
     private accountModel = new AccountModel();
 
-
+    
 
     public get Strategy() {
         return new Strategy(

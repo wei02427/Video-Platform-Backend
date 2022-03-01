@@ -36,7 +36,7 @@ export class VideoController extends ControllerBase {
 
 
 
-        await this.channelService.upload(user!.id!, title, description, folderName, file.data, img.data);
+        await this.channelService.upload(user!, title, description, folderName, file.data, img.data);
 
         return this.formatResponse('ok', HttpStatus.OK);
     }
@@ -73,12 +73,16 @@ export class VideoController extends ControllerBase {
 
         // 如果 api 附帶 uid 資訊，就是查看別人的頻道
         if (req.params.uid) {
+            const channelID = _.toNumber(req.params.uid);
             const uid = req.user?.id;
 
             const name = await this.channelService.getChannelName(id);
-            const isSubscriber = uid ? await this.channelService.checkSubscriber(uid, id) : false;
 
-            result = { name, isSubscriber };
+            const isSelf = uid === channelID ? true : undefined;
+            const isSubscriber = !_.isUndefined(uid) && !isSelf ? await this.channelService.checkSubscriber(uid, channelID) : undefined;
+
+
+            result = { name, isSelf, isSubscriber };
         }
 
         result = { ...result, videos };
@@ -94,8 +98,10 @@ export class VideoController extends ControllerBase {
         const uid = req.user?.id;
         const info = await this.channelService.getVideoInfo(hash);
 
-        const isSubscriber = uid ? await this.channelService.checkSubscriber(uid, info.uid) : false;
-        return this.formatResponse({ ...info, isSubscriber }, HttpStatus.OK);
+        const isSelf = uid === info.uid ? true : undefined;
+        const isSubscriber = !_.isUndefined(uid) && !isSelf ? await this.channelService.checkSubscriber(uid, info.uid) : undefined;
+
+        return this.formatResponse({ ...info, isSubscriber, isSelf }, HttpStatus.OK);
     }
 
     @Autobind

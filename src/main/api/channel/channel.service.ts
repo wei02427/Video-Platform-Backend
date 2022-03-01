@@ -15,12 +15,14 @@ export class ChannelService {
     private channelSocket = new ChannelSocket();
 
 
-    public async upload(userID: number, title: string, description: string, folderName: string, video: Buffer, img: Buffer) {
+    public async upload(user: Express.User, title: string, description: string, folderName: string, video: Buffer, img: Buffer) {
 
         const bitrates = [Bitrate.LOW_235K_240P];
         const folderPath = path.join(__dirname, '../../../../videos');
         let videosTmp: tmp.FileResult[], audioTmp: tmp.FileResult;
         const stepProgress = { encodeMultiBitrate: 0, encodeDash: 0, upload: 0 };
+        const userID = user.id!;
+
 
         const updateProgress = (progress: number, step: 'encodeMultiBitrate' | 'encodeDash' | 'upload') => {
             stepProgress[step] = progress * 0.25;
@@ -33,7 +35,7 @@ export class ChannelService {
 
 
         }
-        
+
         // 轉成不同畫質
         encodeMultiBitrate(video, bitrates, updateProgress.bind(this))
 
@@ -66,15 +68,19 @@ export class ChannelService {
                                 uploadCount++;
 
                                 updateProgress(uploadCount / mpegDashFiles.length * 100, 'upload');
-      
+                                // console.log(uploadCount, mpegDashFiles.length, filename);
                                 if (uploadCount === mpegDashFiles.length) {
                                     this.channelSocket.emitUploadFinish(userID, folderName);
                                     this.videoModel.uploadVideoCover(img, folderName).then(() => resolve());
 
                                 }
- 
+
                             })
-                            .catch(err => reject(err));
+                            .catch(err => {
+                                reject(err);
+
+
+                            });
 
                     });
 
@@ -106,10 +112,10 @@ export class ChannelService {
             .then(async () => {
                 const subscribers = await this.accountModel.getSubscribesByID(userID);
                 console.log('emit subscriber');
-                this.channelSocket.emitSubscriber(subscribers, { vid: folderName, title: title });
+                this.channelSocket.emitSubscriber(subscribers, { vid: folderName, title: title, channel: user.name });
             })
             .catch(err => {
-                console.log(err);
+                console.log('Upload Error', err);
             });
 
 

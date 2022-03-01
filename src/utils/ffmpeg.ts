@@ -8,16 +8,17 @@ import path from "path";
 export const enum Bitrate {
     LOW_235K_240P = 235,
     MIDDLE_1050k_480P = 1050,
+    MIDDLE_3000k_720P = 3000 ,
     HIGH_4300K_1080P = 4300
 };
 
 const scale = {
     [Bitrate.HIGH_4300K_1080P]: '1080',
+    [Bitrate.MIDDLE_3000k_720P]: '720',
     [Bitrate.MIDDLE_1050k_480P]: '480',
     [Bitrate.LOW_235K_240P]: '240'
 }
-
-
+ 
 
 export default function encodeMultiBitrate(data: Buffer, bitrates: Bitrate[], updateProgress: (progress: number, step: 'encodeMultiBitrate' | 'encodeDash' | 'upload') => void) {
 

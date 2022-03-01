@@ -1,13 +1,15 @@
 import io, { Socket } from 'socket.io';
 import http from 'http';
 import _ from 'lodash';
-import { serialize, parse } from "cookie";
+
 import type { SessionSocket } from '../model/account.model';
+import { LargeNumberLike } from 'crypto';
 
 export default abstract class SocketBase {
 
     public static socketIo = new io.Server();
     private static users: { uid: string, socketIds: string[] }[] = [];
+
 
 
     public static InitSocket(server: http.Server) {
@@ -65,9 +67,14 @@ export default abstract class SocketBase {
                 _.pull(user.socketIds, socketId);
                 return;
             }
-        }); 
+        });
 
     }
+
+    public static clearSocketIdByUser(uid: number) {
+        SocketBase.users = _.reject(SocketBase.users, ['uid', uid]);
+    }
+
 
     protected getSocketsByUid(uid: number) {
         const user = _.find(SocketBase.users, ['uid', uid]);

@@ -3,5 +3,5 @@
 /src/database/*.json
 
 /dist
-
+/videos
 .env

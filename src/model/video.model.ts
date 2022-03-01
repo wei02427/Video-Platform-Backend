@@ -29,6 +29,8 @@ export default class VideoModel {
     public uploadDashFile(folderPath: string, folderName: string, filename: string) {
 
         return this.bucket.upload(path.join(folderPath, folderName, filename), {
+            resumable: false,
+            validation: false,
             destination: folderName + '/' + filename,
         });
 

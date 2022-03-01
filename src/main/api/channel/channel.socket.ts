@@ -32,7 +32,7 @@ export default class ChannelSocket extends SocketBase {
         });
     }
 
-    public emitSubscriber(uids: number[], videoInfo: { vid: string, title: string }) {
+    public emitSubscriber(uids: number[], videoInfo: { vid: string, title: string, channel: string }) {
 
 
         _.forEach(uids, uid => {

@@ -1,4 +1,5 @@
-import {  Request, Response, NextFunction } from 'express';
+import SocketBase from '../../../base/socket.base';
+import { Request, Response, NextFunction } from 'express';
 import _ from 'lodash';
 
 import { ControllerBase } from "../../../base/controller.base";
@@ -28,15 +29,16 @@ export class AccountController extends ControllerBase {
 
     public async logout(req: Request, res: Response, next: NextFunction) {
 
-        req.session.destroy(() => { });
+        SocketBase.clearSocketIdByUser(req.user!.id!);
 
+        req.session.destroy(() => { });
         return this.formatResponse('ok', HttpStatus.OK);
 
     }
 
     public async authenticated(req: Request, res: Response, next: NextFunction) {
 
-        return this.formatResponse('ok', HttpStatus.OK);
+        return this.formatResponse({ name: req.user?.name }, HttpStatus.OK);
     }
 
 
