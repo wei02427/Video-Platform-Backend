@@ -7,8 +7,8 @@ import session from 'express-session';
 import passport from 'passport';
 import AccountService from './main/auth/account/account.service';
 import AccountModel, { Account } from './model/account.model';
-import http from 'http';
-
+import https from 'https';
+import * as fs from 'fs';
 import _ from 'lodash';
 import SocketBase from './base/socket.base';
 import AccountSocket from './main/auth/account/account.socket';
@@ -21,7 +21,7 @@ export class App {
   private route = new AppRoute();
   private accountService = new AccountService();
   private accountModel = new AccountModel();
-  private server: http.Server;
+  private server: https.Server;
 
 
 
@@ -30,7 +30,11 @@ export class App {
   constructor() {
     this.setHelmet();
     this.setCors();
-    this.server = http.createServer(this.app);
+    this.server = https.createServer({
+      key: fs.readFileSync('/usr/etc/letsencrypt/live/videoshareapi.hopto.org/privkey.pem'),
+      cert: fs.readFileSync('/usr/etc/letsencrypt/live/videoshareapi.hopto.org/fullchain.pem'),
+      ca: fs.readFileSync('/usr/etc/letsencrypt/live/videoshareapi.hopto.org/fullchain.pem'),
+    }, this.app);
 
     this.setSession();
     this.setPassport();
@@ -61,7 +65,7 @@ export class App {
 
   private setCors(): void {
     this.app.use(cors({
-      "origin": 'http://localhost:3001',
+      "origin": ['https://video-platform-335208.uc.r.appspot.com'],
       "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
       "credentials": true,
       "optionsSuccessStatus": 204
@@ -82,7 +86,9 @@ export class App {
       cookie: {
         path: '/',
         maxAge: 1000 * 60 * 60 * 60, // 設定 session 的有效時間，單位毫秒
-        httpOnly: true
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true
       }
     });
 
@@ -113,7 +119,7 @@ export class App {
     passport.serializeUser<number>(function (user, done) {
       done(null, user.id);
     });
-    
+
     //passport.deserializeUser() 會將 session 中的 user 資訊附加到 req.user 上 
     passport.deserializeUser<number>(async (userID, done) => {
       const user = await this.accountModel.getAccountByID(userID);
@@ -127,7 +133,7 @@ export class App {
   }
   private registerRoute(): void {
 
-
+    //   this.app.use(express.static(__dirname + '/static', { dotfiles: 'allow' }));
     this.app.use('/', (req: Request, res, next) => {
       console.log(req.user?.email, 'request user')
       next();

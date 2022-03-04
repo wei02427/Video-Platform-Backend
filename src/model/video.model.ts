@@ -47,21 +47,28 @@ export default class VideoModel {
     public async getVideo(hash: string, filename: string) {
 
 
-        const file = await this.bucket.file(hash + '/' + filename);
-        const [metaData] = await file.getMetadata();
+        try {
+            const file = this.bucket.file(hash + '/' + filename);
 
-        return [file, metaData];
+            const [metaData] = await file.getMetadata();
+
+            return [file, metaData];
+        } catch (e) {
+            console.log(`getVideo not found: ${hash}/${filename}`);
+            return null;
+        }
+
 
     }
 
 
     public async getVideoInfo(hash: string) {
 
-        const knex =  Database.getInstance();
+        const knex = Database.getInstance();
         const info = await this.Videos.clone()
             .where('hash', '=', hash)
             .innerJoin('accounts', 'accounts.id', 'videos.uid')
-            .select('title', 'description', 'upload_date',knex.raw(`accounts.id  as "uid"`),knex.raw(`accounts.name  as "name"`))
+            .select('title', 'description', 'upload_date', knex.raw(`accounts.id  as "uid"`), knex.raw(`accounts.name  as "name"`))
             .first();
 
         return info;

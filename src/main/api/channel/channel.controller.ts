@@ -49,15 +49,21 @@ export class VideoController extends ControllerBase {
 
 
         const { hash, filename } = req.params;
-        const [file, metaData] = await this.channelService.getVideo(hash, filename);
+        const video = await this.channelService.getVideo(hash, filename);
 
+        if (!_.isNull(video)) {
+            const [file, metaData] = video;
+            res.set({
+                'Content-Type': metaData.contentType,
+                'Content-Length': metaData.size
+            })
 
-        res.set({
-            'Content-Type': metaData.contentType,
-            'Content-Length': metaData.size
-        })
+            file.createReadStream().pipe(res);
+        } else {
+            return this.formatResponse('not found', HttpStatus.NOT_FOUND);
 
-        file.createReadStream().pipe(res);
+        }
+
 
     }
 

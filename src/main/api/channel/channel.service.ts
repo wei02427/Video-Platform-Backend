@@ -17,7 +17,7 @@ export class ChannelService {
 
     public async upload(user: Express.User, title: string, description: string, folderName: string, video: Buffer, img: Buffer) {
 
-        const bitrates = [Bitrate.LOW_235K_240P];
+        const bitrates = [Bitrate.LOW_235K_240P,Bitrate.MIDDLE_3000k_720P];
         const folderPath = path.join(__dirname, '../../../../videos');
         let videosTmp: tmp.FileResult[], audioTmp: tmp.FileResult;
         const stepProgress = { encodeMultiBitrate: 0, encodeDash: 0, upload: 0 };
