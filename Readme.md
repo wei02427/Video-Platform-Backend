@@ -3,6 +3,10 @@
 ### Github
   - [前端](https://github.com/wei02427/Video-Share)
 
+### 帳號
+  - member@gmail.com / member123456
+  - member2@gmail.com / 123456
+  
 ### 此專案是為了練習
     - 網頁影片串流
     - 網頁通知
