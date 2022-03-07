@@ -1,8 +1,7 @@
-# 影片分享平台
+# 影片分享平台 - 後端
 
 ### Github
   - [前端](https://github.com/wei02427/Video-Share)
-  - [後端](https://github.com/wei02427/Video-Platform-Backend)
 
 ### 此專案是為了練習
     - 網頁影片串流
@@ -13,7 +12,6 @@
     - MVC 架構
 
 ### 運用了
-    - React 
     - Node.js + Express.js
     - Docker
     - Socket.io
