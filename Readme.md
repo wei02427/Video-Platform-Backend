@@ -17,6 +17,7 @@
     - Socket.io
     - FFmpeg + MP4Box
     - ElasticSearch
+    - Heroku ClearDB
     - Compute Engine + App Engine
 
 
